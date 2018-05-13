@@ -3,11 +3,11 @@ Ticket management APIs for UI development and any other app development.
 
 ## Getting Started
 To deploy this project:-
-'''
-	Go to ticketing directory
-	Run auto.sh script with ROOT/Superuser
-	Wait till all installation process gets over
-'''
+```
+* Go to ticketing directory
+* Run auto.sh script with ROOT/Superuser
+* Wait till all installation process gets over
+```
 
 ## Available APIs/Operations
 
