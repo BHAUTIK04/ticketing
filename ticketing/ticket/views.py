@@ -160,27 +160,33 @@ def ticket(request):
             try:
                 request_data = json.loads(request.body)
                 ticket_id = ObjectId()
-                description = request_data.get("description", " ")
-                product_name = request_data.get("product", " ")
+                description = request_data.get("description", "")
+                product_name = request_data.get("product", "")
                 logger.info("Ticker request came from {} for this product {}".format(emp_id, product_name))
-                try:
-                    #mongodb insertion
-                    insert_ticket = db["ticket"].insert({"_id":ticket_id,
-                                                         "ticket_id":str(ticket_id),
-                                                         "description": description,
-                                                         "emp_id": emp_id,
-                                                         "emp_email":emp_email,
-                                                         "created_at": str(datetime.now()),
-                                                         "status": "pending",
-                                                         "product": product_name})
-                    logger.info("ticker inserted with ticket number {}".format(insert_ticket))
-                    response_data = {"flag":"success",
-                                     "message": "Ticket Created, Admin will get back to you soon."}
-                    return HttpResponse(json.dumps(response_data), status=201)
-                except Exception as e:
-                    logger.error("Error while insert in mongodb, due to {}".format(e))
+                if description and product_name:
+                    try:
+                        #mongodb insertion
+                        insert_ticket = db["ticket"].insert({"_id":ticket_id,
+                                                             "ticket_id":str(ticket_id),
+                                                             "description": description,
+                                                             "emp_id": emp_id,
+                                                             "emp_email":emp_email,
+                                                             "created_at": str(datetime.now()),
+                                                             "status": "pending",
+                                                             "product": product_name})
+                        logger.info("ticker inserted with ticket number {}".format(insert_ticket))
+                        response_data = {"flag":"success",
+                                         "message": "Ticket Created, Admin will get back to you soon."}
+                        return HttpResponse(json.dumps(response_data), status=201)
+                    except Exception as e:
+                        logger.error("Error while insert in mongodb, due to {}".format(e))
+                        response_data = {"flag":"error",
+                                         "message": "Not able to create ticket now please try again later"}
+                        return HttpResponse(json.dumps(response_data), status = 400)
+                else:
+                    logger.error("empty ticket request from user {}".format(emp_id))
                     response_data = {"flag":"error",
-                                     "message": "Not able to create ticket now please try again later"}
+                                     "message": "description and product missing in request"}
                     return HttpResponse(json.dumps(response_data), status = 400)
             except Exception as e:
                 logger.error("Error while creating ticket, due to {}".format(e))
