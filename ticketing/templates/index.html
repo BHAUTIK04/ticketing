@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+
+    <title>API Index</title>
+  </head>
+  <body>
+  	<div class="container-fluid">
+  		<h1 align="center" style="margin-top:10px; margin-bottom:10px;"><b>API Details</b></h1>
+  		<table class="table table-hover">
+		    <thead>
+		      <tr>
+		        <th>URI</th>
+		        <th>Method</th>
+		        <th>Request Parameter <br>(Request body)</th>
+		        <th>Expected Response<br>(status code)</th>
+		        <th>Request Eg</th>
+		        <th>Response Eg</th>
+		      </tr>
+		    </thead>
+		    <tbody>
+		      <tr>
+		        <td>/createuser</td>
+		        <td>POST</td>
+		        <td>email,password</td>
+		        <td>200, 201, 405, 409</td>
+		        <td>{"email":"user1@email.com", "password":"password"}</td>
+		        <td>{"flag":"error","message":"Email already Exists"}<br>{"flag":"success","message":"User Created"}<br>{"flag":"error", "message":"Null value not allowed for email and password"}<br>{"flag":"error", "message":"Only POST request allowed"}</td>
+		      </tr>
+		      <tr>
+		        <td>/login</td>
+		        <td>POST</td>
+		        <td>email, password</td>
+		        <td>200,400,405</td>
+		        <td>{"email":"user1@email.com", "password":"password"}</td>
+		        <td>{"flag":"success", "message":"User loggedin successfully"}<br>{"flag":"error", "message":"Entered Username/password is wrong."}<br>{"flag":"error", "message": "Only POST method allowed."}<br>{"flag":"error", "msg":"Something went wrong. Please try again"}</td>
+		      </tr>
+		      <tr>
+		        <td>/logout</td>
+		        <td>GET</td>
+		        <td>None</td>
+		        <td>200, 405</td>
+		        <td>None</td>
+		        <td>{"flag":"success", "message":"User logout"}<br>{"flag":"error", "message":"You are not logged in. Please log in and try again"}<br>{"flag":"error", "message":"Only GET method allowed"}</td>
+		      </tr>
+		      <tr>
+		        <td>/searchticket/ticket_id</td>
+		        <td>GET</td>
+		        <td>None</td>
+		        <td>200, 404, 405, 500</td>
+		        <td>None</td>
+		        <td>{"flag":"success", "ticket": ticket_detail}<br>{"flag":"error", "ticket":{}}<br>{"flag":"error", "message": "Invalid ticket id, try again with correct id"}<br>{"flag":"error", "message": "Only GET request is allowed for this API"}</td>
+		      </tr>
+		      <tr>
+		        <td rowspan="4">/ticket</td>
+		        <td>POST</td>
+		        <td>product,description</td>
+		        <td>201, 400</td>
+		        <td>{"product":"payroll", "description":"Didnot get pay slip"}</td>
+		        <td>{"flag":"success", "message": "Ticket Created, Admin will get back to you soon."}<br>{"flag":"error", "message": "Not able to create ticket now please try again later"}</td> 
+		      </tr>
+		      <tr>
+		        <td>GET</td>
+		        <td>None</td>
+		        <td>200</td>
+		        <td>None</td>
+		        <td>{"flag":"success", "tickets": []}<br>{"flag":"error", "message": "Not able to fetch tickets."}</td>  
+		      </tr>
+		      <tr>
+		        <td>PUT</td>
+		        <td>ticket_id,description</td>
+		        <td>200</td>
+		        <td>{"ticket_id":"5af7d2d4304be61499f449ce","description":"Didnot get pay slip since i joined."}</td>
+		        <td>{"flag":"success", "message": "Modified successfully"}<br>{"flag":"error", "message": "Ticket can not be modified."}</td>  
+		      </tr>
+		      <tr>
+		        <td>DELETE</td>
+		        <td>ticket_id</td>
+		        <td>200</td>
+		        <td>{"ticket_id":"5af7d2d4304be61499f449ce"}</td>
+		        <td>{"emp_id":emp_id, "ticket_id": ticket_id}<br>{"flag":"success", "message": "Ticket 5af7d2d4304be61499f449ce deleted successfully."}</td>  
+		      </tr>
+		      <tr>
+		        <td rowspan="2">/adminticket</td>
+		        <td>GET</td>
+		        <td>None</td>
+		        <td>200,401</td>
+		        <td>/adminticket?staus=pending <br> /adminticket?product=payroll</td>
+		        <td>{"flag":"success", "tickets": [tickets]}</td>
+		      </tr>
+		      <tr>
+		      	<td>PUT</td>
+		        <td>ticket_id, status, remarks</td>
+		        <td>200,401</td>
+		        <td>{"ticket_id":"5af7d2d4304be61499f449ce", "status":"open", "remarks":"opened to resolve"}</td>
+		        <td>{"flag":"success", "message": "Status updated successfully"}<br>{"flag":"success", "message": "Status remains same"}</td>
+		      </tr>
+		    </tbody>
+		  </table>
+  	</div>
+    
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js" integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T" crossorigin="anonymous"></script>
+  </body>
+</html>
