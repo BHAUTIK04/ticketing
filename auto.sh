@@ -1,5 +1,4 @@
 #!/bin/bash
 
 docker build -t "ticketapi" .
-docker run -d -p 8000:8000 -p 27017:27018 -p 3306:3307 --name "ticketapi" ticketapi
-
+docker run -d -p 8001:8000 -p 27018:27017 -p 3307:3306 --name "ticketapi" ticketapi
