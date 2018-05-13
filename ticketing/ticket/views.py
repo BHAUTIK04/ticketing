@@ -50,13 +50,13 @@ def createUser(request):
                 user=User.objects.create_user(username=_email, password=_password, email=_email)
                 user.first_name = req_data.get("first_name", " ")
                 user.last_name = req_data.get("last_name", " ")
-                if "staff" in req_data and req_data["staff"]:
+                if "role" in req_data and req_data["role"] == "staff":
                     user.is_staff = True
                 user.save()
                 response_data = {"flag":"success","message":"User Created"}
                 return HttpResponse(json.dumps(response_data))
             else:
-                response_data = {"flag":"error", "message":"Null value not allowed for email and password"}
+                response_data = {"flag":"error", "message":"Do request with email and password"}
                 return HttpResponse(json.dumps(response_data))
         else:
             logger.info("Create user GET request")
