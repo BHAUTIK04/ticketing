@@ -4,21 +4,22 @@ from __future__ import unicode_literals
 from django.shortcuts import render
 from django.http.response import HttpResponse
 from django.contrib.auth.models import User
-import logging 
+import logging
 from pymongo import MongoClient
 from bson import ObjectId
 from datetime import datetime
 from django.views.decorators.csrf import csrf_exempt
 import json
 from django.contrib.auth import authenticate, login, logout
-# from django.contrib.auth.decorators import login_required
-# from django.http import response
+from django.conf import settings
 
 logger = logging.getLogger(__name__)
 
 def mongoConn():
-    conn = MongoClient('localhost', 27017)
-    db = conn["employeeticket"]
+    print settings.MONGODB_URL
+    print settings.MONGODB_DATABASE
+    conn = MongoClient('mongodb://'+settings.MONGODB_URL)
+    db = conn[settings.MONGODB_DATABASE]
     return db
 
 def index(request):
@@ -29,15 +30,15 @@ def index(request):
 def createUser(request):
     """
         URI: hostname:8000/createuser
-        Registration for new user 
-        @param email: Email id /unique email id for registration 
+        Registration for new user
+        @param email: Email id /unique email id for registration
         @param password: Password which will be use for registaration
         @param first_name: first nameof user
         @param last_name: last name of user
         This parameter can be use for login later.
     """
     try:
-        if request.method == "POST": 
+        if request.method == "POST":
             req_data = json.loads(request.body)
             logger.info("Create user request {}".format(req_data))
             _email = req_data.get("email", "").lower()
@@ -64,7 +65,7 @@ def createUser(request):
     except Exception as e:
         logger.error("Error while creatting user, reason is {}".format(e))
         return HttpResponse(json.dumps({"flag":"error", "message":"Error."}), status = 500)
-    
+
 @csrf_exempt
 def userLogin(request):
     """
@@ -132,9 +133,9 @@ def ticket(request):
     """
         URI: hostname:8000/ticket
         POST:Raise/Generate ticket for any available product with proper description.
-            emp_id and emp_email from request.Ticket_id is ObjectId. 
-            status can be "pending","open","resolved","closed". 
-            But Initial status of any request is pending. Later it can be updated by admin. 
+            emp_id and emp_email from request.Ticket_id is ObjectId.
+            status can be "pending","open","resolved","closed".
+            But Initial status of any request is pending. Later it can be updated by admin.
             Request params:
                 @param description:ticket description
                 @param product: product type/ product name Eg:- Pay, Reimburse, Machine Required, Attendance
@@ -143,7 +144,7 @@ def ticket(request):
         PUT:
             Request to modify the ticket description.
             @param ticket_id: Ticket id/ObjectId
-            @param description: Description to modify 
+            @param description: Description to modify
         DELETE:
             Request to delete generated ticket.
             @param ticket_id: Ticket id
@@ -164,7 +165,7 @@ def ticket(request):
                 logger.info("Ticker request came from {} for this product {}".format(emp_id, product_name))
                 try:
                     #mongodb insertion
-                    insert_ticket = db["ticket"].insert({"_id":ticket_id, 
+                    insert_ticket = db["ticket"].insert({"_id":ticket_id,
                                                          "ticket_id":str(ticket_id),
                                                          "description": description,
                                                          "emp_id": emp_id,
@@ -173,19 +174,19 @@ def ticket(request):
                                                          "status": "pending",
                                                          "product": product_name})
                     logger.info("ticker inserted with ticket number {}".format(insert_ticket))
-                    response_data = {"flag":"success", 
+                    response_data = {"flag":"success",
                                      "message": "Ticket Created, Admin will get back to you soon."}
                     return HttpResponse(json.dumps(response_data), status=201)
                 except Exception as e:
                     logger.error("Error while insert in mongodb, due to {}".format(e))
-                    response_data = {"flag":"error", 
+                    response_data = {"flag":"error",
                                      "message": "Not able to create ticket now please try again later"}
                     return HttpResponse(json.dumps(response_data), status = 400)
             except Exception as e:
                 logger.error("Error while creating ticket, due to {}".format(e))
                 response_data ={"flag":"error", "message": "Not able to create ticket now please try again later"}
                 return HttpResponse(json.dumps(response_data), status=500)
-            
+
         elif request.method == "GET":
             try:
                 data = db["ticket"].find({"emp_id": emp_id}, {"_id":0})
@@ -195,7 +196,7 @@ def ticket(request):
                 logger.error("Not able to fetch tickets, due to {}".format(e))
                 response_data = {"flag":"error", "message": "Not able to fetch tickets."}
                 return HttpResponse(json.dumps(response_data), status = 500)
-            
+
         elif request.method == "PUT":
             try:
                 if request.body:
@@ -205,8 +206,8 @@ def ticket(request):
                         ticket_id = request_data.get("ticket_id")
                         logger.info("Modify ticket request for ticket {}".format(ticket_id))
                         # mongodb update
-                        modified_response = db["ticket"].update({"ticket_id": ticket_id, 
-                                                                 "emp_id": emp_id}, 
+                        modified_response = db["ticket"].update({"ticket_id": ticket_id,
+                                                                 "emp_id": emp_id},
                                                                 {"$set":{"description": description,
                                                                          "modified_at": str(datetime.now())}})
                         logger.info("Response for modified ticket {} is {}".format(ticket_id, modified_response))
@@ -228,7 +229,7 @@ def ticket(request):
                 logger.error("Not able to modify ticket, due to {}".format(e))
                 response_data = {"flag":"error", "message": "Can not modify ticket at the moment, Please try again later."}
                 return HttpResponse(json.dumps(response_data), status = 500)
-            
+
         elif request.method == "DELETE":
             try:
                 if request.body:
@@ -258,21 +259,21 @@ def ticket(request):
                 logger.error("Delete request from {} can not serve".format(request.user))
                 response_data = {"flag":"error", "message": "Ticket can not be deleted,please try later."}
                 return HttpResponse(json.dumps(response_data), status = 500)
-            
+
     except Exception as e:
         logger.info("Error {}".format(e))
         response_data = {"flag":"error", "message": "Service not available, Contact admin or try again later"}
         return HttpResponse(json.dumps(response_data),status=400)
-    
-    
-    
+
+
+
 
 def searchTicket(request, ticket_id):
     """
         To search ticket by ticket id
         Eg: hostname:8000/searchticket/ticket_id
-        ticket_id should not be empty or incorrect. 
-        ticket_id is 24 char long bson objectid.  
+        ticket_id should not be empty or incorrect.
+        ticket_id is 24 char long bson objectid.
     """
     try:
         if not request.user.is_authenticated():
@@ -285,7 +286,7 @@ def searchTicket(request, ticket_id):
                 ticket_detail = db["ticket"].find_one({"ticket_id":ticket_id}, {"_id":0})
                 if ticket_detail:
                     response_data = {"flag":"success", "ticket": ticket_detail}
-                    status_code = 200 
+                    status_code = 200
                 else:
                     response_data = {"flag":"error", "ticket": {}}
                     status_code = 404
@@ -302,8 +303,8 @@ def searchTicket(request, ticket_id):
         logger.error("Error While searching ticket {}".format(e))
         response_data = {"flag":"error", "message": "Service not available, Contact admin or try again later"}
         return HttpResponse(json.dumps(response_data),status=500)
-    
-    
+
+
 @csrf_exempt
 def adminTicket(request):
     """
@@ -314,9 +315,9 @@ def adminTicket(request):
             @param ticket_id: id of ticket which is requested to change
             @param status: new status of tickets
             @param remarks: admin remarks
-            
+
         GET: hostname:8000/adminticket OR hostname:8000/adminticket?status=pending
-            returns all tickets with given arguments    
+            returns all tickets with given arguments
     """
     try:
         if request.user.is_authenticated():
@@ -370,4 +371,3 @@ def adminTicket(request):
         logger.error("Error in admin API {} ".format(e))
         response_data = {"flag":"error", "message": "Error while serving this api"}
         return HttpResponse(json.dumps(response_data))
-    

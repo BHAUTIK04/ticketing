@@ -157,3 +157,6 @@ LOGGING = {
         },
     },
 }
+
+MONGODB_URL = "localhost:27017"
+MONGODB_DATABASE = "employeeticket"
